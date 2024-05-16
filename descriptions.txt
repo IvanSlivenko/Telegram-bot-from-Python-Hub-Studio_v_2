@@ -1,0 +1,50 @@
+
+cd /D d:\
+--------------------------------------------------- Part 1
+Part 1
+
+
+https://youtu.be/cNb6WYNvxok?list=PLNi5HdK6QEmWLtb8gh8pwcFUJCAabqZh_
+
+
+1. botfather
+
+2. /newbot
+
+name == dorsMarket
+login == dorsMarketBot
+token ==
+7012513939:AAGHf4-DSqK9D70av_Vnw-8ADcq5zQ99XiE
+
+3. /setprivacy
+
+вибираємо бота
+тиснемо => disable
+
+4. add users and admin
+
+5. venv
+python -m venv venv
+venv\Scripts\activate
+
+pip install aiogram
+pip install python-dotenv
+
+
+
+
+===================================================
+00 : 15 : 06 
+
+--------------------------------------------------- End Part 1
+
+
+
+--------------------------------------------------- Part 2
+
+https://youtu.be/MvTLLCOMyEQ?list=PLNi5HdK6QEmWLtb8gh8pwcFUJCAabqZh_
+
+====================================================
+00 : 04 : 47
+----------------------------------------------------end Part 2
+
