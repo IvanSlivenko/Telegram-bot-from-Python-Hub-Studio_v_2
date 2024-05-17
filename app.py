@@ -1,40 +1,30 @@
 import asyncio
+import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 
-TOKEN='7012513939:AAGHf4-DSqK9D70av_Vnw-8ADcq5zQ99XiE'
+#==================================================
+from dotenv import find_dotenv, load_dotenv
+load_dotenv(find_dotenv())
+#==================================================
 
-#-------------------------------------------------------- Створюємо бот
-bot = Bot(token=TOKEN)
+
+from handlers.user_privat import user_privat_router
+
+
+
+
+ALOOWED_UPDATES = ['message', 'edited_message'] #----------- Обмеження типів подій
+
+bot = Bot(token=os.getenv('TOKEN'))
 dp = Dispatcher()
 
-
-#------------------------------------------------------------ Команда /start
-@dp.message(CommandStart())
-async def start_cmd(message : types.Message):
-    await message.answer(f'Привіт.  {message.from_user.first_name}.   Ви активували команду старт')
+dp.include_router(user_privat_router)
 
 
-
-
-
-
-#---------------------------------------------------- Ехо розташовуємо вкінці
-@dp.message()
-async def echo(message : types.Message):
-    #--------------------------------------------------------
-    # text = message.text
-
-    # if  text in ['Привіт' , 'привіт' , 'hi', 'hello']:
-    #     await message.answer('І вам привіт')
-    # elif text in ['Пока', 'пока', 'до побачення', 'До побачення', 'до побаченя', 'До побаченя']: 
-    #     await message.answer('До зустрічі')   
-    # else:
-    #     await message.answer(message.text)  
-    #-------------------------------------------------------
-    await message.answer(message.text) 
 
 #------------------------------------------------------ Запускаємо Бот
 async def main():
-    await dp.start_polling(bot)
+    await bot.delete_webhook(drop_pending_updates=True) # ----------------- не реагувати на пропущені повідомлення
+    await dp.start_polling(bot, allowed_updates = ALOOWED_UPDATES)
 asyncio.run(main())
