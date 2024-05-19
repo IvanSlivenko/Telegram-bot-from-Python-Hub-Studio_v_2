@@ -10,6 +10,8 @@ load_dotenv(find_dotenv())
 
 
 from handlers.user_privat import user_privat_router
+from handlers.user_group import user_group_router
+from handlers.user_privat_support import user_privat_router_support
 from common.bot_cmds_list import private
 
 
@@ -18,7 +20,13 @@ ALOOWED_UPDATES = ['message', 'edited_message'] #----------- Обмеження 
 bot = Bot(token=os.getenv('TOKEN'))
 dp = Dispatcher()
 
+dp.include_router(user_group_router)
+dp.include_router(user_privat_router_support)
 dp.include_router(user_privat_router)
+
+
+
+
 
 
 
