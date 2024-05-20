@@ -44,7 +44,7 @@ async def doors_cmd(message : types.Message):
 @user_privat_router_support.message(F.text.lower().contains('вихід'))
 @user_privat_router_support.message(Command('exit'))
 async def exit_cmd(message : types.Message):
-    await message.answer('До нових зустрічей', reply_markup=reply_custom.del_kbd) 
+    await message.answer('До нових зустрічей 🖐️', reply_markup=reply_custom.del_kbd) 
 
 
 
