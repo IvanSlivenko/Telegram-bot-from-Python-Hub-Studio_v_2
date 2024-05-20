@@ -6,4 +6,8 @@ private= [
     BotCommand(command='payment', description='Варіанти оплати'),
     BotCommand(command='shipping', description='Варіанти доставки'),
     BotCommand(command='catalog', description='Каталог'),
+    BotCommand(command='utk', description='Опалення'),
+    BotCommand(command='doors', description='Двері'),
+    BotCommand(command='go', description='Почати'),
+    BotCommand(command='exit', description='Вийти'),
 ]

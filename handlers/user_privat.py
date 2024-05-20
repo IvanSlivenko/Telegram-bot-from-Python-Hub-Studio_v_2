@@ -5,6 +5,9 @@ from aiogram.filters import CommandStart, Command, or_f
 from common.contacts_list import contact_shipping
 from filters.chat_types import ChatTypeFilter
 
+from kbds import reply
+from kbds import reply_custom
+
 
 user_privat_router = Router()
 user_privat_router.message.filter(ChatTypeFilter(['private']))
@@ -14,7 +17,17 @@ user_privat_router.message.filter(ChatTypeFilter(['private']))
 #------------------------------------------------------------ Команда /start
 @user_privat_router.message(CommandStart())
 async def start_cmd(message : types.Message):
-    await message.answer(f'Привіт.  {message.from_user.first_name}.  Я віртуальний помічник')
+    await message.answer(f'Привіт.  {message.from_user.first_name}.  Я віртуальний помічник',
+                         reply_markup=reply.start_kb_3.as_markup(
+                             resize_keyboard=True,
+                             input_field_placeholder='Що вас цікавить'
+                            )
+                         )
+    
+@user_privat_router.message(F.text.lower().contains('почат'))
+@user_privat_router.message(Command('go'))
+async def begin_cmd(message : types.Message):
+    await message.answer('Раді вас вітати', reply_markup=reply_custom.start_kb)     
 
 
 @user_privat_router.message(
@@ -26,7 +39,8 @@ async def start_cmd(message : types.Message):
         )
 # @user_privat_router.message(Command('menu'))
 async def menu_cmd(message : types.Message):
-    await message.answer(f'{message.from_user.first_name}  ви викликали команду меню')
+    await message.answer(f'{message.from_user.first_name}  ви викликали команду меню', reply_markup=reply.del_kbd)
+    
 
 @user_privat_router.message(F.text.lower().contains('про нас'))
 @user_privat_router.message(Command('about'))
@@ -37,13 +51,7 @@ async def about_cmd(message : types.Message):
 @user_privat_router.message(Command('payment'))
 async def payment_cmd(message : types.Message):
     await message.answer('Варіанти оплати')
-
-
-@user_privat_router.message(Command('catalog'))
-async def catalog_cmd(message : types.Message):
-    await message.answer('Тут буде каталог')      
-
-
+   
 
 @user_privat_router.message((F.text.lower().contains('привез')) | (F.text.lower().contains('достав'))) # ----------------- contains - шукає збіги у тексті повідомлення
 @user_privat_router.message(Command('shipping'))
