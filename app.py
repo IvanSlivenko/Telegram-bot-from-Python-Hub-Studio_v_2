@@ -2,6 +2,7 @@ import asyncio
 import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
+from aiogram.enums import ParseMode
 
 #==================================================
 from dotenv import find_dotenv, load_dotenv
@@ -17,7 +18,7 @@ from common.bot_cmds_list import private
 
 ALOOWED_UPDATES = ['message', 'edited_message'] #----------- Обмеження типів подій
 
-bot = Bot(token=os.getenv('TOKEN'))
+bot = Bot(token=os.getenv('TOKEN'), parse_mode=ParseMode.HTML)
 dp = Dispatcher()
 
 dp.include_router(user_group_router)

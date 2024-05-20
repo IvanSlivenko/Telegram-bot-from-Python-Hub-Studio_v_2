@@ -1,4 +1,4 @@
-from  aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from  aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, KeyboardButtonPollType
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 start_kb = ReplyKeyboardMarkup(
@@ -15,6 +15,11 @@ start_kb = ReplyKeyboardMarkup(
             
         ],
         [
+            KeyboardButton(text="Відправити номер  ☎", request_contact=True),
+            KeyboardButton(text="Віправити локацію 🌍", request_location= True),
+            KeyboardButton(text="Створити опитування 🎤", request_poll=KeyboardButtonPollType())
+        ],
+         [
             KeyboardButton(text="Вихід 🏡"),
             
         ],

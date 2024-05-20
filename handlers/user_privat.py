@@ -1,6 +1,8 @@
 
 from aiogram import F, types,  Router
 from aiogram.filters import CommandStart, Command, or_f
+from aiogram.utils.formatting import as_list, as_marked_section, Bold
+
 
 from common.contacts_list import contact_shipping
 from filters.chat_types import ChatTypeFilter
@@ -50,7 +52,16 @@ async def about_cmd(message : types.Message):
 @user_privat_router.message((F.text.lower().contains('заплат')) | (F.text.lower().contains('оплат')))
 @user_privat_router.message(Command('payment'))
 async def payment_cmd(message : types.Message):
-    await message.answer('Варіанти оплати')
+    text = as_marked_section(
+        Bold('Варіанти оплати'),
+        'Банківський рахунок',
+        'Готівка',
+        'Бартер',
+        marker='✅'
+
+        
+    )
+    await message.answer(text.as_html())
    
 
 @user_privat_router.message((F.text.lower().contains('привез')) | (F.text.lower().contains('достав'))) # ----------------- contains - шукає збіги у тексті повідомлення
@@ -60,7 +71,17 @@ async def filter_text_custom_contains(message : types.Message):
 
 @user_privat_router.message(F.text) #------------------------------------------ Текстовий фільтр розташовуємо після всіх  конструкцій
 async def filter_text_some(message : types.Message):
+
     await message.answer(f'Вітаємо.\n {message.from_user.first_name}\n Ваш запит :\n "{message.text}"\n ще не зрозумілий для нашої системи ')         
+
+@user_privat_router.message(F.contact) #----------------------- ловимо контакт
+async def get_contact(message: types.Message):
+    await message.answer(f'Контакт отримано :\n{str(message.contact)}')
+    await message.answer(f' номер отримано :\n{str(message.contact.phone_number)}')
+
+@user_privat_router.message(F.location)#----------------------- ловимо  локацію
+async def get_location(message: types.Message):
+    await message.answer(f'локацію отримано {str(message.location)}')        
 
 
 # #---------------------------------------------------- Ехо розташовуємо вкінці

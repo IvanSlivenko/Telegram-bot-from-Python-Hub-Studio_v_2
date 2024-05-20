@@ -2,6 +2,7 @@
 from aiogram import F, types,  Router
 from aiogram.filters import CommandStart, Command, or_f
 
+
 from common.contacts_list import contact_shipping, contact_consult, contact_assembling, contact_cashier
 from filters.chat_types import ChatTypeFilter
 
@@ -39,12 +40,16 @@ async def utk_cmd(message : types.Message):
                                         
                                          ))
 async def doors_cmd(message : types.Message):
-    await message.answer('Вітаємо вас в Маркеті Дверей', reply_markup=reply_custom.start_kb)       
+    await message.answer('Вітаємо вас в Маркеті Дверей', reply_markup=reply_custom.start_kb)
 
 @user_privat_router_support.message(F.text.lower().contains('вихід'))
 @user_privat_router_support.message(Command('exit'))
 async def exit_cmd(message : types.Message):
-    await message.answer('До нових зустрічей 🖐️', reply_markup=reply_custom.del_kbd) 
+    await message.answer('До нових зустрічей 🖐️', reply_markup=reply_custom.del_kbd)    
+
+
+
+ 
 
 
 
@@ -69,5 +74,17 @@ async def filter_text_custom_five(message : types.Message):
 @user_privat_router_support.message(F.text.lower().contains('плат')) # ----------------- contains - шукає збіги у тексті повідомлення
 async def filter_text_custom_six(message : types.Message):
     await message.answer(f'Вітаємо.\n {message.from_user.first_name}\n здійснити оплату ви можете \n за телефоном :\n {contact_cashier}') 
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@user_privat_router_support.message(F.contact) #----------------------- ловимо контакт
+async def get_contact(message: types.Message):
+    await message.answer(f'Контакт отримано :\n{str(message.contact)}')
+    await message.answer(f' номер отримано :\n{str(message.contact.phone_number)}')
+
+@user_privat_router_support.message(F.location)#----------------------- ловимо  локацію
+async def get_location(message: types.Message):
+    await message.answer(f'локацію отримано {str(message.location)}')  
+
 
 
