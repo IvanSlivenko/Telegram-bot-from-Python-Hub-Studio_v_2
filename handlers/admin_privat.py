@@ -1,5 +1,7 @@
 from aiogram import F, Router, types
-from aiogram.filters import Command, or_f
+from aiogram.filters import Command, or_f, StateFilter
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.context import FSMContext
 
 from filters.chat_types import ChatTypeFilter, IsAdmin
 
@@ -13,7 +15,7 @@ ADMIN_KB=get_keyboard(
                         'Змінити товар',
                         'Видалити товар',
                         'Переглянути товари',
-                        placeholder='Оберіг дію',
+                        placeholder='Оберіть дію',
                         sizes=(2,1,1)
 
                     )
@@ -40,35 +42,121 @@ async def delete_product(message: types.Message):
 
 #-------------------------------------------------------Машина Стану ( FSM )
 
-@admin_router.message(F.text.lower() =='додати товар') 
-async def add_product(message: types.Message):
-    await message.answer('Вкажіть назву товару', reply_markup=types.ReplyKeyboardRemove())
+class AddProduct(StatesGroup):
+    name = State()
+    description = State()
+    price = State()
+    kode = State()
+    image = State()
+    
 
-@admin_router.message(Command("відміна"))
-@admin_router.message(F.text.casefold() == "відміна") # ---------------casefold()    повертає стрічку у нижньому реєстрі
-async def cancel_handler(message:types.Message) -> None:
+    texts ={
+        'AddProduct:name':'Введіть назву знову',
+        'AddProduct:description':'Введіть опис знову',
+        'AddProduct:price':'Введіть ціну знову',
+        'AddProduct:kode':'Введіть  код знову ',
+        'AddProduct:image':'Цей стейт останній ',
+        
+    }
+    
+
+@admin_router.message(StateFilter(None), F.text.lower() =='додати товар') #----------------StateFilter(None) перевіряє вдсутність активних станів
+async def add_product(message: types.Message, state: FSMContext):
+    await message.answer('Вкажіть назву товару', reply_markup=types.ReplyKeyboardRemove())
+    #------------------- Стаємо в стан очікування в стадію "name"
+    await state.set_state(AddProduct.name)
+
+#======================================================================================
+@admin_router.message(StateFilter('*'), Command("відміна"))
+@admin_router.message(StateFilter('*'), F.text.casefold() == "відміна") # ---------------casefold()    повертає стрічку у нижньому реєстрі
+async def cancel_handler(message:types.Message, state: FSMContext) -> None:
+    curretnt_state= await state.get_state()
+    if curretnt_state is None:
+        return
+    
+    await state.clear()
     await  message.answer('Дії відмінені', reply_markup=ADMIN_KB)
 
-@admin_router.message(Command("назад"))
-@admin_router.message(F.text.casefold() == "назад") # ---------------casefold()    повертає стрічку у нижньому реєстрі
-async def reverse_handler(message:types.Message) -> None:
-    await  message.answer('Ви повернулись до попередього кроку')
+@admin_router.message(StateFilter('*'), Command("назад"))
+@admin_router.message(StateFilter('*'), F.text.casefold() == "назад") # ---------------casefold()    повертає стрічку у нижньому реєстрі
+async def reverse_handler(message:types.Message, state: FSMContext) -> None:
+    
+    current_state= await state.get_state()
 
-@admin_router.message(F.text)
-async def add_name(message: types.Message):
+    if current_state == AddProduct.name:
+        await  message.answer('Попереднього кроку нема, вкажіть назву товару або напишіть відміна ')
+        return
+    
+    previous = None
+    for step in AddProduct.__all_states__:
+        if step.state == current_state:
+            await state.set_state(previous)
+            await  message.answer(f"Ви повернулись до попередього кроку\n {AddProduct.texts[previous.state]}")
+            return
+        previous = step
+        
+   
+    
+#=======================================================================================
+
+#------------------------------------------- state ==  name
+@admin_router.message(AddProduct.name,F.text) # ------------------------------------- AddProduct.name перевіряє чи ми у стейті name
+async def add_name(message: types.Message, state: FSMContext):
+    await state.update_data(name=message.text)#---------------------- фіксуємо в state назву товару
     await message.answer('Вкажіть опис товару')
+    await state.set_state(AddProduct.description) #---------------Переходимо в state == description
 
-@admin_router.message(F.text)
-async def add_description(message: types.Message):
+
+@admin_router.message(AddProduct.name) # ------------------------------------- AddProduct.name перевіряє чи ми у стейті name
+async def add_name_error(message: types.Message, state: FSMContext):
+    await message.answer('Ви ввели не допустимі данні')
+ 
+#-------------------------------------------------------------------------------------------------------------
+#------------------------------------------- state ==  description
+@admin_router.message(AddProduct.description,F.text)
+async def add_description(message: types.Message, state: FSMContext):
+    await state.update_data(deescription=message.text)#---------------------- фіксуємо в state
     await message.answer('Вкажіть ціну товару')
+    await state.set_state(AddProduct.price)
 
-@admin_router.message(F.text)
-async def add_price(message: types.Message):
+@admin_router.message(AddProduct.description) # ------------------------------------- AddProduct.name перевіряє чи ми у стейті name
+async def add_description_error(message: types.Message, state: FSMContext):
+    await message.answer('Ви ввели не допустимі данні')    
+
+#------------------------------------------- state ==  price
+@admin_router.message(AddProduct.price, F.text)
+async def add_price(message: types.Message, state: FSMContext):
+    await state.update_data(price=message.text)#---------------------- фіксуємо в state
+    await message.answer('Вкажіть внутрішній код товару')
+    await state.set_state(AddProduct.kode)
+
+@admin_router.message(AddProduct.price) # ------------------------------------- AddProduct.name перевіряє чи ми у стейті name
+async def add_price_error(message: types.Message, state: FSMContext):
+    await message.answer('Ви ввели не допустимі данні')      
+
+#------------------------------------------- state ==  artikle
+@admin_router.message(AddProduct.kode, F.text)
+async def add_artikle(message: types.Message, state: FSMContext):
+    await state.update_data(kode=message.text)#---------------------- фіксуємо в state
     await message.answer('Додайте фото товару')
+    await state.set_state(AddProduct.image)
 
-@admin_router.message(F.photo)
-async def add_image(message: types.Message):
+@admin_router.message(AddProduct.kode) # ------------------------------------- AddProduct.name перевіряє чи ми у стейті name
+async def add_kode_error(message: types.Message, state: FSMContext):
+    await message.answer('Ви ввели не допустимі данні')         
+
+
+@admin_router.message(AddProduct.image, F.photo)
+async def add_image(message: types.Message, state: FSMContext):
+    await state.update_data(image=message.photo[-1].file_id)#---------------------- фіксуємо в state photo == max id
     await message.answer('Товар додано', reply_markup=ADMIN_KB)             
+    data = await state.get_data()#------------------------------- зберігаємо state в змінну data
+    await message.answer(str(data))#---------------------------------
+    await state.clear()#------------------------------------------- очищаємо state
+
+@admin_router.message(AddProduct.image) # ------------------------------------- AddProduct.name перевіряє чи ми у стейті name
+async def add_image_error(message: types.Message, state: FSMContext):
+    await message.answer('Ви ввели не допустимі данні')     
 
 
 
