@@ -10,10 +10,36 @@ from filters.chat_types import ChatTypeFilter
 from kbds import reply
 from kbds import reply_custom
 
+from kbds.reply import get_keyboard
+
 
 user_privat_router = Router()
 user_privat_router.message.filter(ChatTypeFilter(['private']))
 
+
+#-------------------------------------------------------------Команда /sectors
+@user_privat_router.message(
+        or_f(
+            Command('sectors'), 
+            (F.text.lower().contains('сектор')),
+            (F.text.lower().contains('відділ')),
+            (F.text.lower().contains('підрозділ')),
+            (F.text.lower().contains('будматеріали')),
+            )
+        )
+async def sectors_cmd(message: types.Message):
+    await message.answer(f'Привіт.  {message.from_user.first_name}.  Вам доступні такі підрозділи',
+                         reply_markup=get_keyboard(
+                                                    'Покрівля та фасад 🏠',    
+                                                    'Буд матеріали 🏘️',
+                                                    'Умань Тепло Комфорт 🚰',
+                                                    'Вікна 🌬️',
+                                                    'Двері 🚪',
+                                                    placeholder='Оберіть підрозділ',
+                                                    sizes=(1,2,2)                          
+                                                    ),
+
+                        )
 
 
 #------------------------------------------------------------ Команда /start
@@ -49,14 +75,19 @@ async def menu_cmd(message : types.Message):
 async def about_cmd(message : types.Message):
     await message.answer('Про нас')
 
-@user_privat_router.message((F.text.lower().contains('заплат')) | (F.text.lower().contains('оплат')))
-@user_privat_router.message(Command('payment'))
+@user_privat_router.message(or_f((Command('payment')),
+                                 (F.text.lower().contains('заплат')), 
+                                 (F.text.lower().contains('оплат')), 
+                                 (F.text.lower() == 'оплата'),
+                                 )
+                            )
+
 async def payment_cmd(message : types.Message):
     text = as_marked_section(
-        Bold('Варіанти оплати'),
+        Bold('Варіанти оплати :\n'),
         'Банківський рахунок',
         'Готівка',
-        'Бартер',
+        'Кредитна Картка',
         marker='✅'
 
         
@@ -64,10 +95,33 @@ async def payment_cmd(message : types.Message):
     await message.answer(text.as_html())
    
 
-@user_privat_router.message((F.text.lower().contains('привез')) | (F.text.lower().contains('достав'))) # ----------------- contains - шукає збіги у тексті повідомлення
-@user_privat_router.message(Command('shipping'))
+@user_privat_router.message(or_f((Command('shipping')),
+                                 (F.text.lower().contains('привез')),  
+                                 (F.text.lower().contains('достав')),
+                                 (F.text.lower() == 'варіанти доставки'),
+                                 )
+                            ) # ----------------- contains - шукає збіги у тексті повідомлення
+
 async def filter_text_custom_contains(message : types.Message):
-    await message.answer(f'Вітаємо.\n{message.from_user.first_name} \n з приводу доставки\n ви можете отримати відповіді за телефоном :\n {contact_shipping}')           
+    text = as_list(
+        as_marked_section(
+            Bold('Варіанти доставки :\n'),
+            'Наш траспорт',
+            'Траспорт третіх осіб',
+            'Самовивіз',
+        marker='✅'),
+        as_marked_section(
+            Bold('Доставка не відбувається :\n'),
+            'На велосипеді',
+            'На скутері',
+            'На гелікоптері',
+        marker='👉'),
+        sep='\n-------------------\n'
+    )
+    
+    await message.answer(text.as_html())
+
+    # await message.answer(f'Вітаємо.\n{message.from_user.first_name} \n з приводу доставки\n ви можете отримати відповіді за телефоном :\n {contact_shipping}')           
 
 @user_privat_router.message(F.text) #------------------------------------------ Текстовий фільтр розташовуємо після всіх  конструкцій
 async def filter_text_some(message : types.Message):

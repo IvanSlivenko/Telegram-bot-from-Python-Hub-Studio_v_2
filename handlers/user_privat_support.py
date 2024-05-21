@@ -71,7 +71,7 @@ async def filter_text_custom_four(message : types.Message):
 async def filter_text_custom_five(message : types.Message):
     await message.answer(f'Вітаємо.\n {message.from_user.first_name}\n замовити монтаж  ви можете \n за телефоном :\n {contact_assembling}')
 
-@user_privat_router_support.message(F.text.lower().contains('плат')) # ----------------- contains - шукає збіги у тексті повідомлення
+@user_privat_router_support.message(F.text.lower().contains('розрах')) # ----------------- contains - шукає збіги у тексті повідомлення
 async def filter_text_custom_six(message : types.Message):
     await message.answer(f'Вітаємо.\n {message.from_user.first_name}\n здійснити оплату ви можете \n за телефоном :\n {contact_cashier}') 
 
