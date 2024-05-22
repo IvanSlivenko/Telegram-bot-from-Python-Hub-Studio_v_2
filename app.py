@@ -17,6 +17,8 @@ from handlers.user_group import user_group_router
 from handlers.user_privat_support import user_privat_router_support
 from handlers.admin_privat import admin_router
 
+from middlewares.db import CounterMiddleware
+
 from common.bot_cmds_list import private
 
 
@@ -27,6 +29,10 @@ bot = Bot(token=os.getenv('TOKEN'), default=DefaultBotProperties(
 bot.my_admins_list = []
 
 dp = Dispatcher()
+
+# dp.update.outer_middleware(CounterMiddleware())#------------------ реєструємо міделвару в диспетчері
+# admin_router.message.middleware(CounterMiddleware())#------------------ реєструємо міделвару в роутері
+
 
 dp.include_router(user_group_router)
 dp.include_router(admin_router)

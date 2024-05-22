@@ -37,7 +37,9 @@ async def change_product(message: types.Message):
     await message.answer('Тут будемо змінювати товар')       
 
 @admin_router.message(F.text.lower() =='видалити товар') 
+# async def delete_product(message: types.Message, counter):
 async def delete_product(message: types.Message):
+    # await message.answer(f'counter: {counter}')
     await message.answer('Тут будемо видаляти товар')
 
 #-------------------------------------------------------Машина Стану ( FSM )

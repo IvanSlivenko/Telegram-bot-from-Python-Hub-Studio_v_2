@@ -23,6 +23,8 @@ async def catalog_cmd(message : types.Message):
                                         (F.text.lower().contains('вентиля')),
                                         (F.text.lower().contains('електрик')),
                                         (F.text.lower().contains('провод')),
+                                        (F.text.lower().contains('провід')),
+                                        (F.text.lower().contains('кабел')),
                                         (F.text.lower().contains('насос')),
                                         (F.text.lower().contains('котл')),
                                          ))
