@@ -110,8 +110,12 @@ https://youtu.be/55w2QpPGC-E
 https://youtu.be/osg6WUc1EN4
 
 pip install sqlalchemy
+pip  install aiosqlite
+pip install asyncpg
+
+
 
 ====================================================
-00 : 15 : 55
+00 : 19 : 49
 ----------------------------------------------------end Part 7
 
