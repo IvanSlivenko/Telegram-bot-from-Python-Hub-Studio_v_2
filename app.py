@@ -24,7 +24,7 @@ from database.engine import create_db, drop_db, session_marker
 from middlewares.db import DataBaseSession
 
 
-ALOOWED_UPDATES = ['message', 'edited_message'] #----------- Обмеження типів подій
+# ALOOWED_UPDATES = ['message', 'edited_message','callback_query'] #----------- Обмеження типів подій
 
 bot = Bot(token=os.getenv('TOKEN'), default=DefaultBotProperties(
             parse_mode=ParseMode.HTML))
@@ -66,5 +66,5 @@ async def main():
     await bot.delete_webhook(drop_pending_updates=True) # ----------------- не реагувати на пропущені повідомлення
     # await bot.delete_my_commands(scope=types.BotCommandScopeAllPrivateChats())#------------------ Видалення кнопки та її наповнення
     await bot.set_my_commands(commands=private, scope=types.BotCommandScopeAllPrivateChats()) #------------------ Відображення кнопки та її наповнення
-    await dp.start_polling(bot, allowed_updates = ALOOWED_UPDATES)# --------------- Старт бота
+    await dp.start_polling(bot, allowed_updates = dp.resolve_used_update_types())# --------------- Старт бота
 asyncio.run(main())

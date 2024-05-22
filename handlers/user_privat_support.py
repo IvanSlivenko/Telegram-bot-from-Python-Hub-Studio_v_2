@@ -5,17 +5,27 @@ from aiogram.filters import CommandStart, Command, or_f
 
 from common.contacts_list import contact_shipping, contact_consult, contact_assembling, contact_cashier
 from filters.chat_types import ChatTypeFilter
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from kbds import reply
 from kbds import reply_custom
+from database.orm_query import orm_get_products
+
 
 user_privat_router_support = Router()
 user_privat_router_support.message.filter(ChatTypeFilter(['private']))
 
 @user_privat_router_support.message(F.text.lower().contains('каталог'))
 @user_privat_router_support.message(Command('catalog'))
-async def catalog_cmd(message : types.Message):
-    await message.answer('Ви бачете початок каталогу', reply_markup=reply_custom.catalog_kb)
+async def catalog_cmd(message : types.Message, session: AsyncSession):
+    for product in await orm_get_products(session):
+        await message.answer_photo(
+            product.image,
+            caption=f"<strong>{product.name}\n</strong>\n \
+                Код: {product.kode}\n \
+                {product.description}\n \
+                Ціна: {round(product.price, 2)}")
+    # await message.answer('Ви бачете початок каталогу', reply_markup=reply_custom.catalog_kb)
 
 @user_privat_router_support.message(or_f(Command('utk'),
                                         (F.text.lower().contains('тепло')),
