@@ -2,10 +2,11 @@ from aiogram import F, Router, types
 from aiogram.filters import Command, or_f, StateFilter
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from filters.chat_types import ChatTypeFilter, IsAdmin
-
 from kbds.reply import get_keyboard
+from database.models import Product
 
 admin_router = Router()
 admin_router.message.filter(ChatTypeFilter(["private"]), IsAdmin())
@@ -23,6 +24,7 @@ ADMIN_KB=get_keyboard(
 @admin_router.message(or_f(
                             (Command("admin")),
                             (F.text.lower().contains('адмін')),
+                            (F.text.lower().contains('//')),
                           )
                     )
 async def admin_access(message: types.Message):
@@ -117,7 +119,7 @@ async def add_name_error(message: types.Message, state: FSMContext):
 #------------------------------------------- state ==  description
 @admin_router.message(AddProduct.description,F.text)
 async def add_description(message: types.Message, state: FSMContext):
-    await state.update_data(deescription=message.text)#---------------------- фіксуємо в state
+    await state.update_data(description=message.text)#---------------------- фіксуємо в state
     await message.answer('Вкажіть ціну товару')
     await state.set_state(AddProduct.price)
 
@@ -149,11 +151,24 @@ async def add_kode_error(message: types.Message, state: FSMContext):
 
 
 @admin_router.message(AddProduct.image, F.photo)
-async def add_image(message: types.Message, state: FSMContext):
+async def add_image(message: types.Message, state: FSMContext, session: AsyncSession ):
     await state.update_data(image=message.photo[-1].file_id)#---------------------- фіксуємо в state photo == max id
     await message.answer('Товар додано', reply_markup=ADMIN_KB)             
     data = await state.get_data()#------------------------------- зберігаємо state в змінну data
-    await message.answer(str(data))#---------------------------------
+
+    obj = Product(
+        name=data["name"],
+        description=data["description"],
+        price=float(data["price"]),
+        kode=data["kode"],
+        image=data["image"],   
+    )
+
+    
+    session.add(obj)
+    await session.commit()
+
+    # await message.answer(str(data))#---------------------------------
     await state.clear()#------------------------------------------- очищаємо state
 
 @admin_router.message(AddProduct.image) # ------------------------------------- AddProduct.name перевіряє чи ми у стейті name

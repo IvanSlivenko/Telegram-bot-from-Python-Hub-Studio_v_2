@@ -25,7 +25,7 @@ async def get_admins(message: types.Message, bot=Bot):
     bot.my_admins_list = admins_list 
     if message.from_user.id in admins_list:
         await message.delete()
-        await message.answer(f'Вітаємо.\n{message.from_user.first_name}\n ви активувались у групі,\n як Aдміністратор')
+        # await message.answer(f'Вітаємо.\n{message.from_user.first_name}\n ви активувались у групі,\n як Aдміністратор')
 
 
 
