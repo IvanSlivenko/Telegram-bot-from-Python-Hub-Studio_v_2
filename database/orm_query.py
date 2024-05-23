@@ -23,7 +23,13 @@ async def orm_get_products(session: AsyncSession):
     query = select(Product)
     result = await session.execute(query)
     return result.scalars().all()
-
+#------------------------------------------------------------------??????????????????????????
+# ------------------------- Отимуємо список всіх продуктів по коду
+async def orm_get_products_with_kode(session: AsyncSession, product_kode: int):
+    query = select(Product).where(Product.kode == product_kode)
+    result = await session.execute(query)
+    return result.scalars().all()
+#-----------------------------------------------------------------???????????????????????????
 
 # ------------------------- Отимуємо один продукт
 async def orm_get_product(session: AsyncSession, product_id: int):
