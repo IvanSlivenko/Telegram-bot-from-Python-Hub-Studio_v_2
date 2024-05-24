@@ -114,8 +114,31 @@ pip  install aiosqlite
 pip install asyncpg
 
 
+postgresql
+pgAdmin 4
+Login/Group Roles - create - login/group Roles
+
+user == bot_2
+password == bot_2
+
+Databases -> create Database
 
 ====================================================
 01 : 23 : 14
 ----------------------------------------------------end Part 7
+
+
+
+
+
+--------------------------------------------------- Part 8 ---------------- 
+https://youtu.be/qfNRbyvx5Uo
+
+category_id:Mapped[int] = mapped_column(ForeignKey('category_id', ondelete='CASCADE'), nullable=False)
+
+ForeignKey('category_id', ondelete='CASCADE') - під час видалення категорії видаляємо товари
+
+====================================================
+00 : 22 : 06
+----------------------------------------------------end Part 8
 

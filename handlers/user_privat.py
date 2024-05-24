@@ -11,11 +11,32 @@ from kbds import reply
 from kbds import reply_custom
 
 from kbds.reply import get_keyboard
+from kbds.inline import get_callback_btns
 
 
 user_privat_router = Router()
 user_privat_router.message.filter(ChatTypeFilter(['private']))
 
+
+#------------------------------------------------------------- test 1
+@user_privat_router.message(or_f((F.text.lower().contains('test')),))
+async def test_cmd(mesage:types.Message):
+    await mesage.answer('Тут ми тестуємо нову функцію', reply_markup=get_callback_btns(btns={
+                                                    'Натисніть мене ':'some_1'}))
+    
+
+@user_privat_router.callback_query(F.data.startswitch('some_'))
+async def counter (callback: types.callback_query):
+    number = int(callback.data.split("_")[-1])
+
+    await callback.message.edit_text(
+        text=f"Натиснутий - {number}",
+        reply_markup=get_callback_btns(btns={
+                                     'Натисніть ще раз ':f'some_{number+1}'
+                                     }))
+
+
+#-------------------------------------------------------------- test 1
 
 #-------------------------------------------------------------Команда /sectors
 @user_privat_router.message(

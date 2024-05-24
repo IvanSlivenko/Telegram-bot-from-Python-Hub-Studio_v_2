@@ -19,7 +19,7 @@ from handlers.admin_privat import admin_router
 
 # from middlewares.db import CounterMiddleware
 
-from common.bot_cmds_list import private
+# from common.bot_cmds_list import private
 from database.engine import create_db, drop_db, session_marker
 from middlewares.db import DataBaseSession
 
@@ -42,18 +42,16 @@ dp.include_router(user_privat_router_support)
 dp.include_router(user_privat_router)
 
 
-
 async def on_startup(bot):
 
-    run_param= False
-    if run_param:
-        await drop_db()
+    
+   
+    # await drop_db() #---------------------- Видаляємо всі таблиці db
+    
     await create_db()    
 
 async def on_shutdown(bot):
     print('Бот завершив своб  роботу')
-
-
 
 
 #------------------------------------------------------ Запускаємо Бот
@@ -65,6 +63,6 @@ async def main():
     await create_db()#--------------------------------- Створюємо таблиці в базі данних
     await bot.delete_webhook(drop_pending_updates=True) # ----------------- не реагувати на пропущені повідомлення
     # await bot.delete_my_commands(scope=types.BotCommandScopeAllPrivateChats())#------------------ Видалення кнопки та її наповнення
-    await bot.set_my_commands(commands=private, scope=types.BotCommandScopeAllPrivateChats()) #------------------ Відображення кнопки та її наповнення
+    # await bot.set_my_commands(commands=private, scope=types.BotCommandScopeAllPrivateChats()) #------------------ Відображення кнопки та її наповнення
     await dp.start_polling(bot, allowed_updates = dp.resolve_used_update_types())# --------------- Старт бота
 asyncio.run(main())

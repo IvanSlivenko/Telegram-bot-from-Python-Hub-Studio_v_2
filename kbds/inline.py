@@ -34,3 +34,6 @@ def get_inlineMix_btns(*, btns: dict[str, str], sizes: tuple[int] = (2,)):
             keyboard.add(InlineKeyboardButton(text=text, callback_data=value))
 
     return keyboard.adjust(*sizes).as_markup()
+
+
+
