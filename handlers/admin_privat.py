@@ -13,9 +13,13 @@ from database.orm_query import (
     orm_update_product,\
     orm_delete_product,\
     orm_get_products_with_kode,\
+    orm_get_products_all,\
     orm_get_banner,\
-    orm_get_categories,\
+    orm_add_banner_description,\
+    orm_change_banner_image,\
     orm_get_info_pages,\
+    orm_get_categories,\
+    orm_create_categories,\
     orm_get_user_carts
 )
 
@@ -29,8 +33,9 @@ ADMIN_KB = get_keyboard(
     "Додати товар",
     "Асортимент для редагування",
     "Пошук товару",
+    "Додати/змінити банер",
     placeholder="Оберіть дію",
-    sizes=(2,),
+    sizes=(2,2),
 )
 
 
@@ -72,7 +77,7 @@ async def admin_access(message: types.Message):
 
 @admin_router.message(F.text.lower() == "асортимент для редагування")
 async def starring_at_product(message: types.Message, session: AsyncSession):
-    for product in await orm_get_products(session):
+    for product in await orm_get_products_all(session):
         await message.answer_photo(
             product.image,
             caption=f"<strong>{product.name}\n</strong>\n \
@@ -174,6 +179,34 @@ async def change_product_callback(
         AddProduct.name
     )  # ---------------------------------- стаємо в стан зміни назви продукту
 
+#--------------------------------- Мікро FSM для додавання / редагування банерів
+
+class AddBanner(StatesGroup):
+    image =State()
+
+@admin_router.message(StateFilter(None), F.text.lower() == "додати/змінити банер")
+async def add_image_baner(message: types.Message, state:FSMContext, session: AsyncSession):
+    pages_names = [page.name for page in await orm_get_info_pages(session)]
+    await message.answer(f"Відправте фото банера.\n\
+                         В описі вкажіть, для якої сторінки'\
+                         {','.join(pages_names)}")
+    await state.get_state(AddBanner.image)#------------------Стаємо в state AddBanner.image 
+
+
+@admin_router.message(AddBanner.image, F.photo)
+async def add_banner(message: types.Message, state:FSMContext, session: AsyncSession):
+    image_id = message.photo[-1].file_id
+    for_page = message.caption.strip()#-------------------strip видаляє пробіли
+    pages_names = [page.name for page in await orm_get_info_pages(session)]
+    if for_page not in pages_names:
+        await message.answer(f"Вкажіть нормальну назву торінки:\n наприклад -\n \
+                             \n {','.join(pages_names)}")  
+        return
+    await orm_change_banner_image(session, for_page, image_id)
+    await message.answer("Банер додано/змінено")
+    await state.clear()
+
+
 
 # -------------------------------------------------------Машина Стану ( FSM )
 
@@ -243,9 +276,9 @@ async def add_name(message: types.Message, state: FSMContext):
     if message.text == "." and AddProduct.product_fo_change:
         await state.update_data(name=AddProduct.product_fo_change.name)
     else:
-        if len(message.text) >= 100:
+        if 4 >= len(message.text) >= 100:
             await message.answer(
-                "Назва товара не повинна перевищувати 100 символів\n Вкажіть назву знову"
+                "Назва товара не повинна перевищувати 100 символів\nабо бути менше 5 символів\n Вкажіть назву знову"
             )
             return
 

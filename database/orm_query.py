@@ -111,8 +111,13 @@ async def orm_add_product(session: AsyncSession, data: dict):
     session.add(obj)  # ------------------------ Записуємо запис в базу данних
     await session.commit()  # -------------------- Фіксуємо запис в базі данних
 
-
 # ------------------------- Отимуємо список всіх продуктів
+async def orm_get_products_all(session: AsyncSession):
+    query = select(Product)
+    result = await session.execute(query)
+    return result.scalars().all()
+
+# ------------------------- Отимуємо список всіх продуктів по категорії
 async def orm_get_products(session: AsyncSession, category_id):
     query = select(Product).where(Product.category_id == int(category_id))
     result = await session.execute(query)
