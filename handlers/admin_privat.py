@@ -14,11 +14,13 @@ from database.orm_query import (
     orm_delete_product,\
     orm_get_products_with_kode,\
     orm_get_products_all,\
+    orm_get_products,\
     orm_get_banner,\
     orm_add_banner_description,\
     orm_change_banner_image,\
     orm_get_info_pages,\
     orm_get_categories,\
+    orm_get_category,\
     orm_create_categories,\
     orm_get_user_carts
 )
@@ -32,6 +34,7 @@ admin_router.message.filter(ChatTypeFilter(["private"]), IsAdmin())
 ADMIN_KB = get_keyboard(
     "Додати товар",
     "Асортимент для редагування",
+    "Асортимент по категоріям",
     "Пошук товару",
     "Додати/змінити банер",
     placeholder="Оберіть дію",
@@ -74,6 +77,41 @@ class SearchProduct(StatesGroup):
 async def admin_access(message: types.Message):
     await message.answer("Що будемо робити", reply_markup=ADMIN_KB)
 
+#------------------------------------------------------------------------------- Асортимент по категоріям
+@admin_router.message(F.text.lower() == "асортимент по категоріям")
+async def starring_at_category(message: types.Message, session: AsyncSession):
+
+    categories = await orm_get_categories(session)
+    btns = {category.name : f'category_{category.id}' for category in categories}
+    await message.answer("Выберите категорию", reply_markup=get_callback_btns(btns=btns))
+
+
+
+@admin_router.callback_query(F.data.startswith('category_'))
+async def starring_at_product_for_category(callback: types.CallbackQuery, session: AsyncSession):
+    category_id = callback.data.split('_')[-1]
+    # category = await orm_get_category(session, int(category_id))
+    # await callback.message.answer(category) 
+
+    for product in await orm_get_products(session, int(category_id)):
+        await callback.message.answer_photo(
+            product.image,
+            caption=f"<strong>{product.name}\n</strong>\n \
+                Код: {product.kode}\n \
+                Категорія id: {product.category_id}\n\
+                {product.description}\n \
+                Ціна: {round(product.price, 2)}",
+            reply_markup=get_callback_btns(
+                btns={
+                    "Bидалити": f"delete_{product.id}",
+                    "Редагувати": f"change_{product.id}",
+                }
+            ),
+        )
+    await callback.answer()
+    # await callback.message.answer("ОК, вот список товаров ⏫")  
+    # Категорія : {category}\n\  
+#------------------------------------------------------------------------------- 
 
 @admin_router.message(F.text.lower() == "асортимент для редагування")
 async def starring_at_product(message: types.Message, session: AsyncSession):

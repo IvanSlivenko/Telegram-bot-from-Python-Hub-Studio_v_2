@@ -84,6 +84,11 @@ async def orm_get_categories(session: AsyncSession):
     result = await session.execute(query)
     return result.scalars().all()
 
+async def orm_get_category(session: AsyncSession, category_id: int):
+    query = select(Category).where(Category.id == category_id)
+    result = await session.execute(query)
+    return result.scalar()
+
 async def orm_create_categories(session: AsyncSession, categories: list):
     query = select(Category)
     result = await session.execute(query)
