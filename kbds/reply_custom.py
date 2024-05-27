@@ -4,7 +4,7 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder
 start_kb = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text="Каталог 🚪"),
+            KeyboardButton(text="Каталог дверей 🚪"),
             
         ],
         [
@@ -26,6 +26,20 @@ start_kb = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True,
     input_field_placeholder='Що вас цікавить у Маркеті Дверей ?'
+)
+
+category_doors_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        
+        [
+            KeyboardButton(text="Зовнішні двері"),
+            KeyboardButton(text="Внутрішні двері"),    
+        ],
+        [
+            KeyboardButton(text="Маркет дверей 🚪"),   
+        ],
+    ],
+    resize_keyboard=True,
 )
 
 

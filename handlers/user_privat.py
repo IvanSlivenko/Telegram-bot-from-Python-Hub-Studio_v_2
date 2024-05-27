@@ -2,10 +2,13 @@
 from aiogram import F, types,  Router
 from aiogram.filters import CommandStart, Command, or_f
 from aiogram.utils.formatting import as_list, as_marked_section, Bold
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 
 from common.contacts_list import contact_shipping
 from filters.chat_types import ChatTypeFilter
+from handlers.menu_processing import get_menu_content
+
 
 from kbds import reply
 from kbds import reply_custom
@@ -19,21 +22,25 @@ user_privat_router.message.filter(ChatTypeFilter(['private']))
 
 
 #------------------------------------------------------------- test 1
-@user_privat_router.message(or_f((F.text.lower().contains('test')),))
+@user_privat_router.message(F.text == 'test')
 async def test_cmd(mesage:types.Message):
     await mesage.answer('Тут ми тестуємо нову функцію', reply_markup=get_callback_btns(btns={
-                                                    'Натисніть мене ':'some_1'}))
+                                                    'Натисніть мене ': 'test_1'
+                                                    }))
     
-
-@user_privat_router.callback_query(F.data.startswitch('some_'))
-async def counter (callback: types.callback_query):
+@user_privat_router.callback_query(F.data.startswith('test_'))
+async def test_counter(callback: types.CallbackQuery):
     number = int(callback.data.split("_")[-1])
 
     await callback.message.edit_text(
         text=f"Натиснутий - {number}",
         reply_markup=get_callback_btns(btns={
-                                     'Натисніть ще раз ':f'some_{number+1}'
+                                     'Натисніть ще раз': f'test_{number+1}',
+
                                      }))
+    
+
+
 
 
 #-------------------------------------------------------------- test 1
@@ -65,13 +72,42 @@ async def sectors_cmd(message: types.Message):
 
 #------------------------------------------------------------ Команда /start
 @user_privat_router.message(CommandStart())
-async def start_cmd(message : types.Message):
-    await message.answer(f'Привіт.  {message.from_user.first_name}.  Я віртуальний помічник',
-                         reply_markup=reply.start_kb_3.as_markup(
-                             resize_keyboard=True,
-                             input_field_placeholder='Що вас цікавить'
-                            )
-                         )
+async def start_cmd(message : types.Message, session: AsyncSession):
+    media, reply_markup = await get_menu_content(session, level=0, menu_name="main")
+    
+    await message.answer_photo(media.media, caption=media.caption, reply_markup=reply_markup)
+
+
+
+
+    
+
+
+
+
+
+#-------------------------------------------------------------------------------- Команда /start
+# @user_privat_router.message(CommandStart())
+# async def start_cmd(message : types.Message):
+    
+    
+#     await message.answer("Привіт, я віртуальний помічник",
+#                          reply_markup=get_callback_btns(btns={
+#                              'Натисни менe': 'some_1'
+#                          }))
+    
+# @user_privat_router.callback_query(F.data.startswith('some_'))
+# async def counter(callback: types.CallbackQuery):
+#     number = int(callback.data.split('_')[-1])
+
+#     await callback.message.edit_text(
+#         text=f"Натиснуто - {number}",
+#         reply_markup=get_callback_btns(btns={
+#                              'Додати 1 ':f'some_{number+1}',
+#                              'Відняти 1 ':f'some_{number-1}',
+#                          }))
+
+#--------------------------------------------------------------------------------
     
 @user_privat_router.message(F.text.lower().contains('почат'))
 @user_privat_router.message(Command('go'))
@@ -86,7 +122,6 @@ async def begin_cmd(message : types.Message):
             (F.text.lower().contains('функц'))
             )
         )
-# @user_privat_router.message(Command('menu'))
 async def menu_cmd(message : types.Message):
     await message.answer(f'{message.from_user.first_name}  ви викликали команду меню', reply_markup=reply.del_kbd)
     
@@ -141,8 +176,7 @@ async def filter_text_custom_contains(message : types.Message):
     )
     
     await message.answer(text.as_html())
-
-    # await message.answer(f'Вітаємо.\n{message.from_user.first_name} \n з приводу доставки\n ви можете отримати відповіді за телефоном :\n {contact_shipping}')           
+         
 
 @user_privat_router.message(F.text) #------------------------------------------ Текстовий фільтр розташовуємо після всіх  конструкцій
 async def filter_text_some(message : types.Message):
@@ -158,6 +192,15 @@ async def get_contact(message: types.Message):
 async def get_location(message: types.Message):
     await message.answer(f'локацію отримано {str(message.location)}')        
 
+
+#--------------------------------------------------------------------------------------------   
+    # await message.answer(f'Привіт.  {message.from_user.first_name}.  Я віртуальний помічник',
+    #                      reply_markup=reply.start_kb_3.as_markup(
+    #                          resize_keyboard=True,
+    #                          input_field_placeholder='Що вас цікавить'
+    #                         )
+    #                      )
+#--------------------------------------------------------------------------------------------
 
 # #---------------------------------------------------- Ехо розташовуємо вкінці
 # @user_privat_router.message()

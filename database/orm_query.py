@@ -42,7 +42,7 @@ class Paginator:
     def get_previous(self):
         if self.page > 1:
             self.page -= 1
-            return self.__get_slice()
+            return self.__get_slise()
         raise IndexError(f'Previous page does not exist. Use has_previous() to check before.')
         
     
@@ -63,7 +63,7 @@ async def orm_change_banner_image(session: AsyncSession, name: str, image: str):
     query = update(Banner).where(Banner.name == name).values(image=image)
     await session.execute(query)
     await session.commit()
-
+   
 
 async def orm_get_banner(session: AsyncSession, page: str):
     query = select(Banner).where(Banner.name == page)
@@ -123,7 +123,7 @@ async def orm_get_products_all(session: AsyncSession):
     return result.scalars().all()
 
 # ------------------------- Отимуємо список всіх продуктів по категорії
-async def orm_get_products(session: AsyncSession, category_id):
+async def orm_get_products(session: AsyncSession, category_id: int):
     query = select(Product).where(Product.category_id == int(category_id))
     result = await session.execute(query)
     return result.scalars().all()

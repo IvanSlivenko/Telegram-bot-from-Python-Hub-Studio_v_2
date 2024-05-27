@@ -90,15 +90,15 @@ async def starring_at_category(message: types.Message, session: AsyncSession):
 @admin_router.callback_query(F.data.startswith('category_'))
 async def starring_at_product_for_category(callback: types.CallbackQuery, session: AsyncSession):
     category_id = callback.data.split('_')[-1]
-    # category = await orm_get_category(session, int(category_id))
-    # await callback.message.answer(category) 
+    category = await orm_get_category(session, int(category_id))
+    await callback.message.answer(category.name) 
 
     for product in await orm_get_products(session, int(category_id)):
         await callback.message.answer_photo(
             product.image,
             caption=f"<strong>{product.name}\n</strong>\n \
                 Код: {product.kode}\n \
-                Категорія id: {product.category_id}\n\
+                Категорія : {category.name}\n \
                 {product.description}\n \
                 Ціна: {round(product.price, 2)}",
             reply_markup=get_callback_btns(
@@ -110,16 +110,19 @@ async def starring_at_product_for_category(callback: types.CallbackQuery, sessio
         )
     await callback.answer()
     # await callback.message.answer("ОК, вот список товаров ⏫")  
-    # Категорія : {category}\n\  
+
 #------------------------------------------------------------------------------- 
 
 @admin_router.message(F.text.lower() == "асортимент для редагування")
 async def starring_at_product(message: types.Message, session: AsyncSession):
     for product in await orm_get_products_all(session):
+        category_id = product.category_id
+        category = await orm_get_category(session, int(category_id))
         await message.answer_photo(
             product.image,
             caption=f"<strong>{product.name}\n</strong>\n \
                 Код: {product.kode}\n \
+                Категорія: {category.name}\n \
                 {product.description}\n \
                 Ціна: {round(product.price, 2)}",
             reply_markup=get_callback_btns(
@@ -223,12 +226,12 @@ class AddBanner(StatesGroup):
     image =State()
 
 @admin_router.message(StateFilter(None), F.text.lower() == "додати/змінити банер")
-async def add_image_baner(message: types.Message, state:FSMContext, session: AsyncSession):
+async def add_image_baner(message: types.Message, state: FSMContext, session: AsyncSession):
     pages_names = [page.name for page in await orm_get_info_pages(session)]
     await message.answer(f"Відправте фото банера.\n\
                          В описі вкажіть, для якої сторінки'\
                          {','.join(pages_names)}")
-    await state.get_state(AddBanner.image)#------------------Стаємо в state AddBanner.image 
+    await state.set_state(AddBanner.image)#------------------Стаємо в state AddBanner.image 
 
 
 @admin_router.message(AddBanner.image, F.photo)

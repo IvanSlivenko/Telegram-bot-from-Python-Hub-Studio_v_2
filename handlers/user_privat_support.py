@@ -9,24 +9,66 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from kbds import reply
 from kbds import reply_custom
-from database.orm_query import orm_get_products
+from database.orm_query import orm_get_products, orm_get_products_all, orm_get_category
 
 
 user_privat_router_support = Router()
 user_privat_router_support.message.filter(ChatTypeFilter(['private']))
 
-@user_privat_router_support.message(F.text.lower().contains('каталог'))
-@user_privat_router_support.message(Command('catalog'))
+@user_privat_router_support.message(F.text.lower().contains('каталог дверей'))
+async def category_doors(message : types.Message):
+    await message.answer('Оберіть категорію', reply_markup=reply_custom.category_doors_kb)  
+
+
+@user_privat_router_support.message(or_f(
+                                        (F.text == 'Внутрішні двері'),
+                                        (F.text == 'Зовнішні двері'),
+                                         ))
+
 async def catalog_cmd(message : types.Message, session: AsyncSession):
-    for product in await orm_get_products(session):
+
+    if message.text == 'Внутрішні двері':    
+        category_id = 1
+    elif message.text == 'Зовнішні двері':
+        category_id = 2
+
+    for product in await orm_get_products(session, int(category_id)):
+        current_category_id = product.category_id
+        category = await orm_get_category(session, int(current_category_id))
         await message.answer_photo(
             product.image,
             caption=f"<strong>{product.name}\n</strong>\n \
                 Код: {product.kode}\n \
+                Категорія : {category.name}\n \
                 {product.description}\n \
                 Ціна: {round(product.price, 2)}")
-    # await message.answer('Ви бачете початок каталогу', reply_markup=reply_custom.catalog_kb)
 
+#-----------------------------------------------------------------------------------------------------
+# async def catalog_cmd(message : types.Message, session: AsyncSession):
+#     for product in await orm_get_products_all(session):
+#         await message.answer_photo(
+#             product.image,
+#             caption=f"<strong>{product.name}\n</strong>\n \
+#                 Код: {product.kode}\n \
+#                 {product.description}\n \
+#                 Ціна: {round(product.price, 2)}")
+        
+#------------------------------------------------------------------------------------------------------    
+
+
+#-------------------------------------------------------------------------------- Каталог всіх дверей
+# @user_privat_router_support.message(F.text.lower().contains('каталог'))
+# @user_privat_router_support.message(Command('catalog'))
+# async def catalog_cmd(message : types.Message, session: AsyncSession):
+#     for product in await orm_get_products_all(session):
+#         await message.answer_photo(
+#             product.image,
+#             caption=f"<strong>{product.name}\n</strong>\n \
+#                 Код: {product.kode}\n \
+#                 {product.description}\n \
+#                 Ціна: {round(product.price, 2)}")
+
+#--------------------------------------------------------------------------------
 @user_privat_router_support.message(or_f(Command('utk'),
                                         (F.text.lower().contains('тепло')),
                                         (F.text.lower().contains('вода')),
@@ -49,6 +91,7 @@ async def utk_cmd(message : types.Message):
                                         (F.text.lower().contains('двер')),
                                         (F.text.lower().contains('шпалер')),
                                         (F.text.lower().contains('обои')),
+                                        (F.text.lower().contains('маркет дверей')),
                                         
                                          ))
 async def doors_cmd(message : types.Message):
