@@ -139,6 +139,6 @@ category_id:Mapped[int] = mapped_column(ForeignKey('category_id', ondelete='CASC
 ForeignKey('category_id', ondelete='CASCADE') - під час видалення категорії видаляємо товари
 
 ====================================================
-00 : 45 : 54
+01 : 05 : 55
 ----------------------------------------------------end Part 8
 
