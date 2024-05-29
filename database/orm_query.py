@@ -169,12 +169,12 @@ async def orm_delete_product(session: AsyncSession, product_id: int):
 #---------------------------------------------------------------------Робота з Юзерами
 
 async def orm_add_user(
-    session: AsyncSession,
-    user_id: int,
-    first_name: str | None = None,
-    last_name: str | None = None,
-    phone: str | None = None,
-):
+        session: AsyncSession,
+        user_id: int,
+        first_name: str | None = None,
+        last_name: str | None = None,
+        phone: str | None = None,
+        ):
     query = select(User).where(User.user_id == user_id)
     result = await session.execute(query)
     if result.first() is None:

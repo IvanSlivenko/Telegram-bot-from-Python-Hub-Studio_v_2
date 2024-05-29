@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from common.contacts_list import contact_shipping
 from filters.chat_types import ChatTypeFilter
 from handlers.menu_processing import get_menu_content
+from database.orm_query import orm_add_user, orm_add_to_cart, orm_get_product
 
 
 from kbds import reply
@@ -72,21 +73,60 @@ async def sectors_cmd(message: types.Message):
 
 #------------------------------------------------------------ Команда /start
 @user_privat_router.message(CommandStart())
+@user_privat_router.message(
+        or_f( 
+            (F.text.lower().contains('дивитись')),
+            )
+        )
 async def start_cmd(message : types.Message, session: AsyncSession):
     media, reply_markup = await get_menu_content(session, level=0, menu_name="main")
     
     await message.answer_photo(media.media, caption=media.caption, reply_markup=reply_markup)
 
+#----------------------------------------------Cart
+async def add_to_cart(callback: types.CallbackQuery, callback_data: MenuCallBack, session: AsyncSession):
+
+    current_product_id=callback_data.product_id
+    current_product = await orm_get_product(session, int(current_product_id))
+    
+    # user = callback.from_user
+    current_user_id=int(callback.from_user.id)
+    
+    await orm_add_user(
+        session,
+        user_id=current_user_id,
+        first_name=callback.from_user.first_name,
+        last_name=callback.from_user.last_name,
+        phone=None,
+    )
+
+
+    await orm_add_to_cart(session, user_id=current_user_id, product_id=callback_data.product_id)
+    await callback.answer(f"Товар : '{current_product.name}' додано в корзину", show_alert=True)
+    # await callback.answer(f"Товар {current_product.name} додано в корзину")
+
+#--------------------------------------------------------------------------
+ 
 
 @user_privat_router.callback_query(MenuCallBack.filter())
 async def user_menu(callback: types.CallbackQuery, callback_data: MenuCallBack, session: AsyncSession):
+    
+    if callback_data.menu_name == "add_to_cart":
+        await add_to_cart(callback, callback_data, session)
+        return
+  
 
     media, reply_markup = await get_menu_content(
         session,
         level=callback_data.level,
         menu_name=callback_data.menu_name,
         category=callback_data.category,
+        page = callback_data.page,
+        user_id = callback.from_user.id,
+        
     )
+
+    
 
     await callback.message.edit_media(media=media, reply_markup=reply_markup)
     await callback.answer()
