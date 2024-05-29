@@ -14,7 +14,7 @@ def get_user_main_btns(*, level: int, sizes: tuple[int] = (2,)):
     keyboard = InlineKeyboardBuilder()
     btns = {
         "Товари 🗳️" : "catalog",
-        "Корзина 🛒" : "cart",
+        "Кошик 🛒" : "cart",
         "Про нас 📖" : "about",
         "Оплата 💰" : "payment",
         "Доставка 🚚" : "shipping",
@@ -45,17 +45,6 @@ def get_products_btns(
     
     keyboard = InlineKeyboardBuilder()
 
-    keyboard.add(InlineKeyboardButton(text="Назад",
-                    callback_data=MenuCallBack(level=level-1, menu_name='main').pack()))
-
-    keyboard.add(InlineKeyboardButton(text="Корзина  🛒",
-                    callback_data=MenuCallBack(level=3, menu_name='cart').pack())) 
-    
-    keyboard.add(InlineKeyboardButton(text="Купити  💸",
-                    callback_data=MenuCallBack(level=level, menu_name='add_to_cart', product_id=product_id).pack())) 
-    
-    keyboard.adjust(*sizes)
-
     row=[]
 
     for text, menu_name in pagination_btns.items():
@@ -74,8 +63,43 @@ def get_products_btns(
                         menu_name=menu_name,
                         category=category,
                         page=page - 1).pack()))
+    keyboard.row(*row)
 
-    return keyboard.row(*row).as_markup()
+    keyboard.add(InlineKeyboardButton(text="Додати в кошик  💸",
+                    callback_data=MenuCallBack(level=level, menu_name='add_to_cart', product_id=product_id).pack())) 
+
+    keyboard.add(InlineKeyboardButton(text="Кошик  🛒",
+                    callback_data=MenuCallBack(level=3, menu_name='cart').pack()))
+
+    keyboard.add(InlineKeyboardButton(text="Попереднє меню",
+                    callback_data=MenuCallBack(level=level-1, menu_name='main').pack())) 
+    
+    
+    
+    # keyboard.adjust(*sizes)
+    return keyboard.adjust(*sizes).as_markup()
+    #------------------------------------------------------------------------------------------------------
+    # row=[]
+
+    # for text, menu_name in pagination_btns.items():
+    #     if menu_name == "next":
+    #         row.append(InlineKeyboardButton(text=text,
+    #                 callback_data=MenuCallBack(
+    #                     level=level,
+    #                     menu_name=menu_name,
+    #                     category=category,
+    #                     page=page + 1).pack()))
+        
+    #     elif menu_name == "previous":
+    #         row.append(InlineKeyboardButton(text=text,
+    #                 callback_data=MenuCallBack(
+    #                     level=level,
+    #                     menu_name=menu_name,
+    #                     category=category,
+    #                     page=page - 1).pack()))
+
+    # return keyboard.row(*row).as_markup()
+    #--------------------------------------------------------------------------------------------------------
 
 def get_user_cart(
         *,
@@ -86,15 +110,18 @@ def get_user_cart(
         sizes: tuple[int] = (3,)
 ):
     keyboard = InlineKeyboardBuilder()
+    
 
     if page:
-        keyboard.add(InlineKeyboardButton(text="Видалити",
-                                          callback_data=MenuCallBack(
-                                              level=level,
-                                              menu_name='delete',
-                                              product_id=product_id,
-                                              page=page
-                                              ).pack()))
+        
+
+        # keyboard.add(InlineKeyboardButton(text="Видалити з кошика",
+        #                                   callback_data=MenuCallBack(
+        #                                       level=level,
+        #                                       menu_name='delete',
+        #                                       product_id=product_id,
+        #                                       page=page
+        #                                       ).pack()))
         
         keyboard.add(InlineKeyboardButton(text="- 1",
                                           callback_data=MenuCallBack(
@@ -115,26 +142,39 @@ def get_user_cart(
         
         keyboard.adjust(*sizes)
 
-        row = []
+        row =[
+            InlineKeyboardButton(text="Видалити з кошика ✂️",
+            callback_data=MenuCallBack(
+            level=level,
+            menu_name='delete',
+            product_id=product_id,
+            page=page
+            ).pack())
+        ]
+
+        keyboard.row(*row)
+
+        row2 = []
 
         for text, menu_name in pagination_btns.items():
             if menu_name == "next":
-                row.append(InlineKeyboardButton(text=text, 
+                row2.append(InlineKeyboardButton(text=text, 
                                                 callback_data=MenuCallBack(level=level, menu_name=menu_name, page=page +1).pack()))
             elif menu_name == "previous":
-                row.append(InlineKeyboardButton(text=text, 
+                row2.append(InlineKeyboardButton(text=text, 
                                                 callback_data=MenuCallBack(level=level, menu_name=menu_name, page=page -1).pack()))    
-        keyboard.row(*row)
+        keyboard.row(*row2)
 
-        row2=[
+        row3=[
         
         InlineKeyboardButton(text = "На головну 🏠",
                              callback_data=MenuCallBack(level=0, menu_name='main',).pack()),
 
-        InlineKeyboardButton(text = "Замовити",
-                             callback_data=MenuCallBack(level=0, menu_name='order',).pack()),                             
+        # InlineKeyboardButton(text = "Замовити",
+        #                      callback_data=MenuCallBack(level=0, menu_name='order',).pack()),                             
         ]
-        return keyboard.row(*row2).as_markup()
+        return keyboard.row(*row3).as_markup()
+    
     else:
         keyboard.add(InlineKeyboardButton(text = "На головну 🏠",
                              callback_data=MenuCallBack(level=0, menu_name='main',).pack())) 
@@ -147,10 +187,10 @@ def get_user_cart(
 def get_user_catalog_btns(*, level: int, categories: list, sizes: tuple[int] = (2,)):
     keyboard = InlineKeyboardBuilder()
 
-    keyboard.add(InlineKeyboardButton(text="Назад",
+    keyboard.add(InlineKeyboardButton(text="Попереднє меню",
                     callback_data=MenuCallBack(level=level-1, menu_name='main').pack()))
 
-    keyboard.add(InlineKeyboardButton(text="Корзина 🛒",
+    keyboard.add(InlineKeyboardButton(text="Кошик 🛒",
                     callback_data=MenuCallBack(level=3, menu_name='cart').pack())) 
     
     for c in categories:

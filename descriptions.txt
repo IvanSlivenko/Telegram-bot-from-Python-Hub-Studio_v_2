@@ -142,3 +142,12 @@ ForeignKey('category_id', ondelete='CASCADE') - під час видалення
 01 : 23 : 52
 ----------------------------------------------------end Part 8
 
+parser
+https://www.youtube.com/watch?v=B_GVI4gITEM
+
+deploy
+
+https://youtu.be/HtSgwJqXhF0
+
+Погодний бот
+https://youtu.be/q1va-iNVcZo

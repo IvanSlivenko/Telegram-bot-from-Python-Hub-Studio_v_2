@@ -75,7 +75,9 @@ async def sectors_cmd(message: types.Message):
 @user_privat_router.message(CommandStart())
 @user_privat_router.message(
         or_f( 
-            (F.text.lower().contains('дивитись')),
+            (F.text.lower().contains('дивитис')),
+            (F.text.lower().contains('купит')),
+            (F.text.lower().contains('придбат')),
             )
         )
 async def start_cmd(message : types.Message, session: AsyncSession):
@@ -102,7 +104,7 @@ async def add_to_cart(callback: types.CallbackQuery, callback_data: MenuCallBack
 
 
     await orm_add_to_cart(session, user_id=current_user_id, product_id=callback_data.product_id)
-    await callback.answer(f"Товар : '{current_product.name}' додано в корзину", show_alert=True)
+    await callback.answer(f"Товар : '{current_product.name}' додано до кошику", show_alert=True)
     # await callback.answer(f"Товар {current_product.name} додано в корзину")
 
 #--------------------------------------------------------------------------
@@ -122,7 +124,9 @@ async def user_menu(callback: types.CallbackQuery, callback_data: MenuCallBack, 
         menu_name=callback_data.menu_name,
         category=callback_data.category,
         page = callback_data.page,
+        product_id=callback_data.product_id,
         user_id = callback.from_user.id,
+
         
     )
 
